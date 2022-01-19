@@ -1,0 +1,80 @@
+/ * Query 1 for Question set#1 Q1*/
+
+WITH t1 AS
+(SELECT film_title, category_name, COUNT(rental)
+AS rental_count
+FROM(
+SELECT c.name category_name, f.title film_title, 
+r.rental_id rental
+FROM category c
+JOIN film_category fa
+ON c.category_id=fa.category_id
+JOIN film f
+ON f.film_id=fa.film_id
+JOIN inventory
+ON inventory.film_id=f.film_id
+JOIN rental r
+ON r.inventory_id= inventory.inventory_id
+WHERE c.name IN ('Comedy','Animation','Children','Classics','Family','Music'
+) )t1
+GROUP BY 1,2
+ORDER BY 2,1 )
+SELECT category_name, SUM( rental_count)
+FROM t1
+GROUP BY 1
+ORDER BY 1;
+
+/ * Query 2 for Question set#1 Q2*/
+WITH t1 AS
+(
+SELECT  category_name, SUM(duration) AS total_duration
+FROM(
+
+SELECT c.name category_name,  
+f.rental_duration duration
+FROM category c
+JOIN film_category fa
+ON c.category_id=fa.category_id
+JOIN film f
+ON f.film_id=fa.film_id
+WHERE c.name IN ('Comedy','Animation','Children','Classics','Family','Music'
+) )t1
+	GROUP BY 1
+ORDER BY 2
+)
+SELECT category_name, SUM(total_duration)
+FROM t1
+GROUP BY 1
+ORDER BY 1;
+
+/ * Query 3 for Question set#1 Q3*/
+
+SELECT category_name, standard_quartile, COUNT(standard_quartile)
+FROM(
+SELECT  c.name category_name, f.rental_duration duration,
+ NTILE (4) OVER (ORDER BY f.rental_duration) AS standard_quartile
+
+FROM category c
+JOIN film_category fa
+ON c.category_id=fa.category_id
+JOIN film f
+ON f.film_id=fa.film_id
+WHERE c.name IN ('Comedy','Animation','Children','Classics','Family','Music')
+
+				 )t1
+
+GROUP BY 1,2
+ORDER BY 1,2;
+
+/ * Query 4 for Question set#2 Q1*/
+
+SELECT DATE_PART('month', r.rental_date) AS rental_month,
+DATE_PART('year',r.rental_date) AS rental_year,
+s.store_id, COUNT(*)
+FROM store s
+JOIN staff st
+ON s.store_id=st.store_id
+JOIN rental r
+ON st.staff_id=r.staff_id
+GROUP BY 1,2,3
+ORDER BY 4 DESC, 2,1;
